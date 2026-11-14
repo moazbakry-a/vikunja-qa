@@ -1,0 +1,614 @@
+{
+  "info": {
+    "_postman_id": "e38bf25c-8610-48e9-8311-39ce2df7daa4",
+    "name": "Vikunja_API_Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57219741",
+    "_collection_link": "https://go.postman.co/collection/57219741-e38bf25c-8610-48e9-8311-39ce2df7daa4?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "login_Auth",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var jsonData = pm.response.json();\r\npm.environment.set(\"token\", jsonData.token);\r\n\r\npm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Response time is less than 800ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(800);\r\n});\r\npm.test(\"Token is present in the response\", function () {\r\n    pm.expect(jsonData.token).to.be.a(\"string\").and.not.empty.and.to.not.be.null;\r\n    });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"long_token\": false,\n  \"password\": \"testing_passowrd123!\",\n  \"username\": \"testing_account\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3456/api/v2/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3456",
+          "path": [
+            "api",
+            "v2",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create a project",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var jsonData = pm.response.json();\r\nproject_id = jsonData.id; // Extract the project_id from the response\r\npm.environment.set(\"project_id\", project_id); // Set the project_id in the environment variables\r\npm.environment.set(\"project_title\", jsonData.title); // Set the project_title in the environment variables\r\n\r\npm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\npm.test(\"Project title is correct\", function () {\r\n    pm.expect(jsonData.title).to.eql(\"API Test Project\");\r\n});\r\npm.test(\"Project ID is not null\", function () {\r\n    pm.expect(jsonData.id).to.exist;\r\n    });\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"\",\n  \"hex_color\": \"\",\n  \"identifier\": \"\",\n  \"is_archived\": false,\n  \"is_favorite\": false,\n  \"parent_project_id\": null,\n  \"position\": 1,\n  \"title\": \"API Test Project\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/projects",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit project's title",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var response = pm.response.json();\r\npm.test(\"Project title updated successfully\", function () {\r\n    pm.expect(response.title).to.eql(\"API Test Project Edited\");\r\n});\r\npm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json-patch+json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"from\": \"\",\n    \"op\": \"replace\",\n    \"path\": \"/title\",\n    \"value\":  \"API Test Project Edited\"\n  }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get project by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Response title matches expected value\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.title).to.equal(\"API Test Project Edited\");\r\n});\r\n\r\npm.test(\"Project ID is correct\", function () {\r\n    var jsonData = pm.response.json()\r\n    var expectedId = pm.environment.get(\"project_id\");\r\n    \r\n    pm.expect(String(jsonData.id)).to.equal(String(expectedId));\r\n});\r\n\r\n\r\n// pm.test(\"Important properties are returned\", function () {\r\n    \r\n//     [\"id\", \"title\", \"description\", \"identifier\", \"is_archived\", \"tasks\"].forEach(function(prop) {\r\n//         pm.expect(pm.response.json()).to.have.property(prop);\r\n//         });\r\n// });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "create tasks",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const jsonData = pm.response.json();\n\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n\npm.test(\"Response contains tasks array\", function () {\n    pm.expect(jsonData).to.have.property('tasks');\n    pm.expect(jsonData.tasks).to.be.an('array');\n    pm.expect(jsonData.tasks.length).to.equal(3);\n});\n\npm.test(\"Tasks have correct titles\", function () {\n    pm.expect(jsonData.tasks[0].title).to.equal(\"this is task one\");\n    pm.expect(jsonData.tasks[1].title).to.equal(\"this is task two\");\n    pm.expect(jsonData.tasks[2].title).to.equal(\"this is task three\");\n});\n\npm.environment.set(\"task1_id\", jsonData.tasks[0].id);\npm.environment.set(\"task2_id\", jsonData.tasks[1].id);\npm.environment.set(\"task3_id\", jsonData.tasks[2].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tasks\": [\n    {\n      \"title\": \"this is task one\"\n    },\n    {\n       \"title\": \"this is task two\"\n    }\n    ,\n    {\n        \"title\": \"this is task three\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}/tasks/bulk",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}",
+            "tasks",
+            "bulk"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "list project's tasks",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response time is less than 500ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(500);\n});\n\npm.test(\"Response body is valid JSON and contains expected fields\", function () {\n    const jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property(\"items\");\n    pm.expect(jsonData).to.have.property(\"total\");\n    pm.expect(jsonData).to.have.property(\"page\");\n    pm.expect(jsonData).to.have.property(\"per_page\");\n});\n\npm.test(\"Items array is present\", function () {\n    const jsonData = pm.response.json();\n    pm.expect(jsonData.items).to.be.an(\"array\");\n    pm.expect(jsonData.items.length).to.equal(3);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}/tasks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit task1's title",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nvar response = pm.response.json();\r\n\r\npm.test(\"Updated title is correct\", () => {\r\n    pm.expect(response.title).to.eql(\"API Task1 Edited\");\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json-patch+json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"from\": \"\",\n    \"op\": \"replace\",\n    \"path\": \"/title\",\n    \"value\": \"API Task1 Edited\"\n  }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{task1_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tasks",
+            "{{task1_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "mark task2 as done",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Task is completed\", () => {\r\n    pm.expect(pm.response.json().done).to.eql(true);\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json-patch+json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"from\": \"\",\n    \"op\": \"replace\",\n    \"path\": \"/done\",\n    \"value\": true\n  }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{task2_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tasks",
+            "{{task2_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete task3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", () => {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Response body is empty\", () => {\r\n    pm.expect(pm.response.text()).to.eql(\"\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{task3_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tasks",
+            "{{task3_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "list tasks after edit",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response time is less than 500ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test(\"Response body is valid JSON and contains expected fields\", function () {\r\n    const jsonData = pm.response.json();\r\n    pm.expect(jsonData).to.have.property(\"items\");\r\n    pm.expect(jsonData).to.have.property(\"total\");\r\n    pm.expect(jsonData).to.have.property(\"page\");\r\n    pm.expect(jsonData).to.have.property(\"per_page\");\r\n});\r\n\r\npm.test(\"Items array is present\", function () {\r\n    const jsonData = pm.response.json();\r\n    pm.expect(jsonData.items).to.be.an(\"array\");\r\n    pm.expect(jsonData.items.length).to.equal(2);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}/tasks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "reopen task2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Task is completed\", () => {\r\n    pm.expect(pm.response.json().done).to.eql(false);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json-patch+json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"from\": \"\",\n    \"op\": \"replace\",\n    \"path\": \"/done\",\n    \"value\": false\n  }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{task2_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tasks",
+            "{{task2_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get task1 by id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Response title matches expected value\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.title).to.equal(\"API Task1 Edited\");\r\n});\r\n\r\npm.test(\"Task ID is correct\", function () {\r\n    var jsonData = pm.response.json()\r\n    var expectedId = pm.environment.get(\"task1_id\");\r\n    \r\n    pm.expect(String(jsonData.id)).to.equal(String(expectedId));\r\n});\r\n\r\n\r\npm.test(\"Important properties are returned\", function () {\r\n    \r\n    [\"id\", \"title\", \"description\", \"identifier\", \"done\"].forEach(function(prop) {\r\n        pm.expect(pm.response.json()).to.have.property(prop);\r\n        });\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{task1_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "tasks",
+            "{{task1_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete project",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r\n    pm.response.to.have.status(204);\r\n});\r\npm.test(\"Response time is less than 500ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "list tasks after deleting the project",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Response time is less than 500ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/projects/{{project_id}}/tasks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "projects",
+            "{{project_id}}",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\npm.test(\"Response time is less than 500ms\", () => {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

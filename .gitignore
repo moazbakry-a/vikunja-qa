@@ -1,0 +1,32 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Pytest generated files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated test artifacts
+test-results/
+playwright-report/
+
+# Local Vikunja database and uploaded files
+/environment/vikunja/db/
+/environment/vikunja/files/
+
+# Windows downloaded-file metadata
+*:Zone.Identifier
+
+# Operating system files
+.DS_Store
+Thumbs.db
